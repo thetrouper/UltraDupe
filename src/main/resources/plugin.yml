@@ -1,0 +1,103 @@
+name: UltraDupe
+version: '${version}'
+main: io.github.thetrouper.ultradupe.UltraDupe
+api-version: 1.19
+authors: [ TheTrouper ]
+description: Detect Block and Ban players who attempt to grief your server.
+website: https://thetrouper.github.io/
+softdepend: [ ProtocolLib ]
+permissions:
+  ultradupe.message:
+    description: Access to the direct messages
+    default: op
+  ultradupe.reply:
+    description: Reply commands
+  ultradupe.debug:
+    description: Permission to use debug commands
+    default: op
+  ultradupe.staff:
+    description: Receive anti-swear and anti-spam warnings
+    default: op
+  ultradupe.chat.antiswear.flags:
+    description: See antiSwear flags
+    default: op
+  ultradupe.chat.antiswear.bypass:
+    description: Bypass the antiSwear
+    default: op
+  ultradupe.chat.antiswear.edit:
+    description: Add a false positive to the config
+    default: op
+  ultradupe.chat.antispam.flags:
+    description: See antispam flags
+    default: op
+  ultradupe.chat.antispam.bypass:
+    description: Bypass the antispam
+    default: op
+  ultradupe.chat.*:
+    description: bypass all chat rules and see all flags
+    default: op
+    children:
+      ultradupe.chat.antiswear.flags: true
+      ultradupe.chat.antiswear.bypass: true
+      ultradupe.chat.antispam.flags: true
+      ultradupe.chat.antispam.bypass: true
+commands:
+  ultradupetab:
+    description: trap tab completion command
+    usage: /ultradupetab you got trolled
+  ultradupe:
+    description: A command for testing.
+    usage: /ultradupe
+    permission: ultradupe.info
+    permission-message: You do not have permission!
+  reop:
+    description: Allows trusted players to elevate their permissions
+    usage: /reop
+  socialspy:
+    permission: ultradupe.spy
+    usage: /socialspy
+    permission-message: You do not have permission to use this command!
+    description: View direct messages sent between players
+    aliases:
+      - spy
+      - sspy
+  msg:
+    permission: ultradupe.message
+    usage: /msg <player> [<message>]
+    permission-message: You do not have permission to message through ultradupe!
+    description: Send messages directly to players
+    aliases:
+      - message
+      - etell
+      - tell
+      - t
+      - ewhisper
+      - whisper
+      - w
+      - privatemessage
+      - pm
+      - m
+      - directmessage
+      - dm
+      - ultradupemessage
+      - sm
+      - stell
+      - smsg
+  reply:
+    description: Reply to the last person messaging you
+    usage: /r [<message>]
+    permission: ultradupe.reply
+    permission-message: You do not have permission to reply through ultradupe!
+    aliases:
+      - r
+      - er
+      - rply
+      - ereply
+      - sr
+      - sreply
+      - ultradupereply
+  ultradupecallback:
+    description: Callback for chat click events
+    usage: /ultradupecallback
+    permission: ultradupe.callbacks
+    permission-message: You have not been given permission to use UltraDupe Chat Callbacks!
