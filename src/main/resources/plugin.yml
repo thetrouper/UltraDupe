@@ -1,24 +1,35 @@
 name: UltraDupe
 version: '${version}'
-main: io.github.thetrouper.ultradupe.UltraDupe
+main: me.trouper.ultradupe.UltraDupe
 api-version: 1.19
 authors: [ TheTrouper ]
-description: Detect Block and Ban players who attempt to grief your server.
+description: The only acceptable dupe plugin.
 website: https://thetrouper.github.io/
-softdepend: [ ProtocolLib ]
 permissions:
+  ultradupe.multiply:
+    default: op
+    description: Access to the multiply/exponential dupe feature
   ultradupe.dupe:
-    description: Access to the dupe
     default: op
-  ultradupe.dupebans.edit:
-    description: edit the dupe ban list
+    description: Access to the dupe feature
+  ultradupe.bypass.mult-cooldown:
     default: op
+    description: Bypass the multiply cooldown
+  ultradupe.bypass.dupe-cooldown:
+    default: op
+    description: Bypass the dupe cooldown
+  ultradupe.bypass.bans:
+    default: op
+    description: Bypass all the dupe bans
   ultradupe.dupebans:
-    description: see the dupe ban list
     default: op
+    description: see the dupe ban list
+  ultradupe.dupebans.edit:
+    default: op
+    description: edit the dupe ban list
 
 commands:
-  ultradupe:
+  duplicate:
     description: A command for testing.
     usage: /ultradupe
     permission: ultradupe.info
@@ -26,7 +37,6 @@ commands:
     aliases:
       - dupe
       - d
-      - ud
   multiply:
     description: A command for testing.
     usage: /ultradupe
@@ -35,7 +45,6 @@ commands:
     aliases:
       - mult
       - m
-      - um
   dupebans:
     description: dupe bans
     usage: /dupebans [add|remove]
