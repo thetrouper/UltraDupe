@@ -2,9 +2,12 @@ package io.github.thetrouper.ultradupe;
 
 import io.github.itzispyder.pdk.PDK;
 import io.github.itzispyder.pdk.utils.misc.JsonSerializable;
-import io.github.thetrouper.ultradupe.cmds.ChatClickCallback;
+import io.github.thetrouper.ultradupe.cmds.DupeBansCommand;
+import io.github.thetrouper.ultradupe.cmds.DupeCommand;
+import io.github.thetrouper.ultradupe.cmds.MultiplyCommand;
+import io.github.thetrouper.ultradupe.data.DupeBanStorage;
 import io.github.thetrouper.ultradupe.data.config.Config;
-import io.github.thetrouper.ultradupe.events.ChatEvent;
+import io.github.thetrouper.ultradupe.events.GuiEvents;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -16,7 +19,9 @@ public final class UltraDupe extends JavaPlugin {
 
     private static UltraDupe instance;
     private static final File cfgfile = new File("plugins/UltraDupe/main-config.json");
+    private static final File dupeBans = new File("plugins/UltraDupe/dupebans.json");
     public static Config config = JsonSerializable.load(cfgfile, Config.class, new Config());
+    public static DupeBanStorage dupeBanStorage = JsonSerializable.load(dupeBans, DupeBanStorage.class, new DupeBanStorage());
     public static final PluginManager manager = Bukkit.getPluginManager();
 
     public static final Logger log = Bukkit.getLogger();
@@ -45,10 +50,12 @@ public final class UltraDupe extends JavaPlugin {
         log.info("Starting Up! (%s)...".formatted(getDescription().getVersion()));
 
         // Commands
-        new ChatClickCallback().register();
+        new DupeCommand().register();
+        new DupeBansCommand().register();
+        new MultiplyCommand().register();
 
         // Events
-        new ChatEvent().register();
+        new GuiEvents().register();
 
         log.info("""
                 Finished!
@@ -68,9 +75,11 @@ public final class UltraDupe extends JavaPlugin {
 
         // Init
         config = JsonSerializable.load(cfgfile, Config.class,new Config());
+        dupeBanStorage = JsonSerializable.load(dupeBans, DupeBanStorage.class,new DupeBanStorage());
 
         // Save
         config.save();
+        dupeBanStorage.save();
     }
 
 
