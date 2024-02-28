@@ -5,14 +5,11 @@ import io.github.itzispyder.pdk.commands.CommandRegistry;
 import io.github.itzispyder.pdk.commands.CustomCommand;
 import io.github.itzispyder.pdk.commands.Permission;
 import io.github.itzispyder.pdk.commands.completions.CompletionBuilder;
-import io.github.itzispyder.pdk.utils.SchedulerUtils;
 import me.trouper.ultradupe.UltraDupe;
-import me.trouper.ultradupe.server.functions.DupeBanCheck;
-import me.trouper.ultradupe.server.sound.SoundPlayer;
+import me.trouper.ultradupe.data.GUIs.DupeBanGUI;
 import me.trouper.ultradupe.server.util.Text;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Material;
-import org.bukkit.Sound;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -31,6 +28,10 @@ public class UltraDupeCommand implements CustomCommand {
         Player p = (Player) sender;
 
         switch (args.get(0).toString()) {
+            case "gui" -> {
+                DupeBanGUI.isInGUI.add(p.getUniqueId());
+                p.openInventory(DupeBanGUI.home.getInventory());
+            }
             case "dupebans" -> {
                 switch (args.get(1).toString()) {
                     case "item" -> handleItemEdit(p,args);
@@ -65,7 +66,8 @@ public class UltraDupeCommand implements CustomCommand {
                 .then(b.arg("material")
                         .then(b.arg("add", "remove")))
         ).then(b.arg("toggle")
-                .then(b.arg("debug","bypass")));
+                .then(b.arg("debug","bypass"))
+        ).then(b.arg("gui"));
     }
 
     private void handleItemEdit(Player p, Args args) {

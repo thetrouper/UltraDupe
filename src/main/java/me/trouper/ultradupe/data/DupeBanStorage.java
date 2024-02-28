@@ -23,8 +23,4 @@ public class DupeBanStorage implements JsonSerializable<DupeBanStorage> {
             Material.NETHERITE_INGOT,
             Material.TOTEM_OF_UNDYING
     );
-    public List<ItemStack> bannedItems = Arrays.asList(
-            GuiItems.backArrow,
-            GuiItems.nextArrow
-    );
 }
