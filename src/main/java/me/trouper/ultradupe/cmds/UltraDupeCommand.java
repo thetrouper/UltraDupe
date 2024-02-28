@@ -69,8 +69,23 @@ public class UltraDupeCommand implements CustomCommand {
                 .then(b.arg("debug","bypass"))
         ).then(b.arg("gui"));
     }
-
-    private void handleItemEdit(Player p, Args args) {
+private void handleItemEdit(Player p, Args args) {
+        if (!p.hasPermission("ultradupe.dupebans.edit")) {
+            DupeBansCommand.handleListBans(p);
+            return;
+        }
+        switch (args.get(2).toString()) {
+            case "add" -> {
+                ItemStack i = p.getInventory().getItemInMainHand();
+                i.getItemMeta().setCustomModelData(UltraDupe.dupeBanStorage.bannedModelData);
+            }
+            case "remove" -> {
+                ItemStack i = p.getInventory().getItemInMainHand();
+                i.getItemMeta().setCustomModelData(0);
+            }
+        }
+    }
+    /*private void handleItemEdit(Player p, Args args) {
         if (!p.hasPermission("ultradupe.dupebans.edit")) {
             DupeBansCommand.handleListBans(p);
             return;
@@ -97,7 +112,7 @@ public class UltraDupeCommand implements CustomCommand {
                 UltraDupe.dupeBanStorage.save();
             }
         }
-    }
+    }*/
 
     private void handleMaterialEdit(Player p, Args args) {
         if (!p.hasPermission("ultradupe.dupebans.edit")) {
