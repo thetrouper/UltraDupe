@@ -59,7 +59,13 @@ public class UltraDupeCommand implements CustomCommand {
 
     @Override
     public void dispatchCompletions(CompletionBuilder b) {
-        b.then(b.arg("[<INT>]"));
+        b.then(b.arg("dupebans")
+                .then(b.arg("item")
+                        .then(b.arg("add","remove")))
+                .then(b.arg("material")
+                        .then(b.arg("add", "remove")))
+        ).then(b.arg("toggle")
+                .then(b.arg("debug","bypass")));
     }
 
     private void handleItemEdit(Player p, Args args) {
@@ -98,14 +104,14 @@ public class UltraDupeCommand implements CustomCommand {
         }
         switch (args.get(2).toString()) {
             case "add" -> {
-
                 Material m = p.getInventory().getItemInMainHand().getType();
                 if (UltraDupe.dupeBanStorage.bannedMaterials.contains(m)) {
                     p.sendMessage(Component.text(Text.prefix("&7The material &c%s&7 is already on the dupe ban list.".formatted(Text.cleanName(m.toString())))));
                     return;
                 }
+                p.sendMessage(Component.text(Text.prefix("&7Adding &c%s&7 to the dupe ban list.".formatted(Text.cleanName(m.toString())))));
                 UltraDupe.dupeBanStorage.bannedMaterials.add(m);
-                p.sendMessage(Component.text(Text.prefix("&7You have added &c%s&7 to the dupe ban list.".formatted(Text.cleanName(m.toString())))));
+
                 UltraDupe.dupeBanStorage.save();
             }
             case "remove" -> {
@@ -114,8 +120,8 @@ public class UltraDupeCommand implements CustomCommand {
                     p.sendMessage(Component.text(Text.prefix("&7The material &c%s&7 is not on the dupe ban list.".formatted(Text.cleanName(m.toString())))));
                     return;
                 }
+                p.sendMessage(Component.text(Text.prefix("&7Removing&a%s&7 from the dupe ban list.".formatted(Text.cleanName(m.toString())))));
                 UltraDupe.dupeBanStorage.bannedMaterials.remove(m);
-                p.sendMessage(Component.text(Text.prefix("&7You have removed &a%s&7 from the dupe ban list.".formatted(Text.cleanName(m.toString())))));
                 UltraDupe.dupeBanStorage.save();
             }
         }

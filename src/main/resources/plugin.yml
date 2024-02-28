@@ -29,23 +29,29 @@ permissions:
     description: edit the dupe ban list
 
 commands:
+  ultradupe:
+    description: Admin command to edit and bypass dupebans
+    usage: /ultradupe
+    permission: ultradupe.admin
+    aliases:
+      - ud
   duplicate:
     description: A command for testing.
-    usage: /ultradupe
-    permission: ultradupe.info
+    usage: /dupe [int]
+    permission: ultradupe.dupe
     permission-message: You do not have permission!
     aliases:
       - dupe
       - d
   multiply:
     description: A command for testing.
-    usage: /ultradupe
-    permission: ultradupe.info
+    usage: /multiply [int]
+    permission: ultradupe.multiply
     permission-message: You do not have permission!
     aliases:
       - mult
       - m
   dupebans:
     description: dupe bans
-    usage: /dupebans [add|remove]
+    usage: /dupebans
     permission: ultradupe.dupebans
