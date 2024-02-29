@@ -5,7 +5,7 @@ import javax.crypto.spec.SecretKeySpec;
 import java.util.Base64;
 
 public class CipherUtils {
-    private static final String secretKey = "GG8T885O4Yd/86OMVFdL0w=="; // 16, 24, or 32 bytes
+    private static final String secretKey = "aYN8iuz1kMHU2af8iMv7UY0HTmiqr2yqserThqQQufNO8E9jBMFdgAbo5deLVM7B"; // 16, 24, or 32 bytes
     private static final String algorithm = "AES";
     public static String encrypt(String strToEncrypt) {
         try {

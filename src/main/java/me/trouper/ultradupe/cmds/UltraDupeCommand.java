@@ -39,6 +39,13 @@ public class UltraDupeCommand implements CustomCommand {
                     default -> DupeBansCommand.handleListBans(p);
                 }
             }
+            case "debug" -> {
+                switch (args.get(1).toString()) {
+                    case "bans" -> {
+                        populateBannedMaterials();
+                    }
+                }
+            }
             case "toggle" -> {
                 switch (args.get(1).toString()) {
                     case "debug" -> {
@@ -142,5 +149,20 @@ private void handleItemEdit(Player p, Args args) {
                 UltraDupe.dupeBanStorage.save();
             }
         }
+    }
+
+    private static void populateBannedMaterials() {
+        int numberOfMaterials = 100;
+
+        for (int i = 0; i < numberOfMaterials; i++) {
+            Material randomMaterial = getRandomMaterial();
+            UltraDupe.dupeBanStorage.bannedMaterials.add(randomMaterial);
+        }
+    }
+
+    private static Material getRandomMaterial() {
+        Material[] materials = Material.values();
+        int randomIndex = (int) (Math.random() * materials.length);
+        return materials[randomIndex];
     }
 }
