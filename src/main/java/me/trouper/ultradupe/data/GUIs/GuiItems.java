@@ -17,15 +17,6 @@ public class GuiItems implements Global {
             .material(Material.ARROW)
             .name(g.color("&7\uD83E\uDC78 &bPrevious Page"))
             .build();
-    public static final ItemStack INFO_ICON = ItemBuilder.create()
-            .material(Material.NAME_TAG)
-            .name(g.color("&b&lInfo"))
-            .lore(g.color("&3➥ &7(Drag-n-drop) &fAdds the item"))
-            .lore(g.color("&3➥ &7(Left-Click) &fRemoves the item"))
-            .lore(g.color(""))
-            .lore(g.color("Page 1/1"))
-            .customModelData(1)
-            .build();
 
     public static final ItemStack BLANK = ItemBuilder.create()
             .material(Material.LIGHT_GRAY_STAINED_GLASS_PANE)

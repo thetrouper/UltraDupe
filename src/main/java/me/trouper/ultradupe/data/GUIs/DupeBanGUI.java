@@ -5,6 +5,7 @@ import io.github.itzispyder.pdk.plugin.builders.ItemBuilder;
 import io.github.itzispyder.pdk.plugin.gui.CustomGui;
 import io.github.itzispyder.pdk.utils.misc.SoundPlayer;
 import me.trouper.ultradupe.UltraDupe;
+import me.trouper.ultradupe.data.DupeBanStorage;
 import me.trouper.ultradupe.server.util.ServerUtils;
 import me.trouper.ultradupe.server.util.Text;
 import net.kyori.adventure.text.Component;
@@ -15,42 +16,32 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-public class DupeBanGUI extends CustomGui implements Global {
+public class DupeBanGUI implements Global {
     static Global g = Global.instance;
 
     public static List<UUID> isInGUI = new ArrayList<>();
 
-    public DupeBanGUI(String title, int size, InvAction mainAction, Map<Integer, InvAction> slotActions, Map<Integer, ItemStack> slotDisplays, CreateAction createAction, CloseAction closeAction) {
-        super(title, size, mainAction, slotActions, slotDisplays, createAction, closeAction);
-    }
-
-    public static void refreshGUI(Player p) {
+    public void refreshGUI(Player p) {
         p.openInventory(home.getInventory());
     }
 
-    public static final CustomGui home = CustomGui.create()
+    public final CustomGui home = CustomGui.create()
             .title(g.color("&#5A88FF&lU&#698CFF&ll&#7890FF&lt&#8794FF&lr&#9699FF&la&#A59DFF&lD&#B4A1FF&lu&#C3A5FF&lp&#D2A9FF&le &7&l| &#D589FFD&#CB99FFu&#C2A9FFp&#B8B9FFe &#AFCAFFB&#A5DAFFa&#9CEAFFn&#96F3FBs &#93F5F2E&#91F7EAd&#8EF9E1i&#8CFBD9t&#89FDD0o&#87FFC8r"))
             .size(54)
-            .defineMain(DupeBanGUI::handleMainClick)
-            .onDefine(DupeBanGUI::handleDefine)
-            .define(45, GuiItems.BACK_ARROW, event -> {
-                event.getWhoClicked().sendMessage(Text.prefix("You clicked back on %s".formatted(event.getClickedInventory())));
-                decrementPage(event.getClickedInventory());
-            })
-            .define(53, GuiItems.NEXT_ARROW, event -> {
-                event.getWhoClicked().sendMessage(Text.prefix("You clicked next on %s".formatted(event.getClickedInventory())));
-                incrementPage(event.getClickedInventory());
-            })
-            .define(49, GuiItems.INFO_ICON, event -> {})
+            .defineMain(this::handleMainClick)
+            .onDefine(inv -> setupPage(inv,1))
+            .define(45, GuiItems.BACK_ARROW, event -> decrementPage(event.getClickedInventory()))
+            .define(53, GuiItems.NEXT_ARROW, event -> incrementPage(event.getClickedInventory()))
             .build();
 
-    private static void handleMainClick(InventoryClickEvent e) {
+    private void handleMainClick(InventoryClickEvent e) {
         Player who = (Player) e.getWhoClicked();
 
         SoundPlayer deny = new SoundPlayer(e.getWhoClicked().getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 1, 1);
@@ -59,6 +50,7 @@ public class DupeBanGUI extends CustomGui implements Global {
 
         if (!isInGUI.contains(e.getWhoClicked().getUniqueId())) {
             deny.play(who);
+            who.closeInventory();
             e.getWhoClicked().setHealth(0);
             return;
         }
@@ -68,12 +60,17 @@ public class DupeBanGUI extends CustomGui implements Global {
         ItemStack with = e.getCursor();
         ItemStack current = e.getCurrentItem();
 
+        //who.sendMessage(Text.prefix("You clicked the item %s while holding %s at the slot %s").formatted(current,with,where));
+
         if (!with.isEmpty()) {
-            //who.sendMessage(Text.prefix("You clicked %s with %s at %s").formatted(current,with,where));
-            allow.play(who);
-            UltraDupe.dupeBanStorage.bannedMaterials.add(with.getType());
-            who.sendMessage(Text.prefix("You have &cadded&7 the material &e%s&7 from the dupe bans.".formatted(Text.cleanName(with.getType().toString()))));
-            who.closeInventory();
+            if (DupeBanStorage.addMaterial(with.getType())) {
+                allow.play(who);
+                who.sendMessage(Text.prefix("You have &cadded&7 the material &e%s&7 from the dupe bans.".formatted(Text.cleanName(with.getType().toString()))));
+            } else {
+                deny.play(who);
+                who.sendMessage(Text.prefix("&cUnable to add the material &e%s&c to the dupe bans. It may not be an item, or is already in the list".formatted(Text.cleanName(with.getType().toString()))));
+            }
+
             refreshGUI(who);
             isInGUI.add(who.getUniqueId());
             UltraDupe.dupeBanStorage.save();
@@ -90,67 +87,66 @@ public class DupeBanGUI extends CustomGui implements Global {
             return;
         }
 
-        if (e.getSlot() > 0 && e.getSlot() < 45) {
-            allow.play(who);
-            UltraDupe.dupeBanStorage.bannedMaterials.remove(what.getType());
-            who.sendMessage(Text.prefix("You have &aremoved&7 the material &e%s&7 from the dupe bans.".formatted(Text.cleanName(what.getType().toString()))));
-            who.closeInventory();
+        if (where >= 0 && where < 45) {
+            boolean correctLore = false;
+            if (what.hasItemMeta() && what.getItemMeta().hasLore()) {
+                for (Component component : what.getItemMeta().lore()) {
+                    String line = component.toString();
+                    if (!line.contains("Left")) continue;
+                    correctLore = true;
+                }
+            }
+            if (!correctLore) {
+                deny.play(who);
+                who.sendMessage(Text.prefix("&cSlow Down! You're preforming incomplete actions on the GUI.".formatted(Text.cleanName(what.getType().toString()))));
+            }
+            if (correctLore && DupeBanStorage.removeMaterial(what.getType())) {
+                allow.play(who);
+                who.sendMessage(Text.prefix("You have &aremoved&7 the material &e%s&7 from the dupe bans.".formatted(Text.cleanName(what.getType().toString()))));
+            } else {
+                deny.play(who);
+                if (correctLore) who.sendMessage(Text.prefix("&cThe material &e%s&c is not on the dupe bans.".formatted(Text.cleanName(what.getType().toString()))));
+            }
+
             refreshGUI(who);
             isInGUI.add(who.getUniqueId());
             UltraDupe.dupeBanStorage.save();
         }
     }
 
-    public static void incrementPage(Inventory inv) {
+    public void incrementPage(Inventory inv) {
         ItemStack info = inv.getItem(49);
-        int pageNumber = info.getItemMeta().getCustomModelData() + 1;
+        ItemMeta meta = info.getItemMeta();
+        int pageNumber = meta.getCustomModelData() + 1;
         ServerUtils.verbose("Incrementing to Page: %s".formatted(pageNumber));
-
-        inv.getItem(49).getItemMeta().setCustomModelData(pageNumber);
-        info.getItemMeta().lore().set(3, Component.text(g.color("&7Page &9%s&7/&b%s".formatted(pageNumber,getMaxPages()))));
-
-        updatePage(inv);
-    }
-
-    public static void decrementPage(Inventory inv) {
-        ItemStack info = inv.getItem(49);
-        int pageNumber = info.getItemMeta().getCustomModelData() - 1;
-        ServerUtils.verbose("Decrementing to Page: %s".formatted(pageNumber));
-
-        inv.getItem(49).getItemMeta().setCustomModelData(pageNumber);
-        info.getItemMeta().lore().set(3, Component.text(g.color("&7Page &9%s&7/&b%s".formatted(pageNumber,getMaxPages()))));
-
-        updatePage(inv);
-    }
-
-    public static void updatePage(Inventory inv) {
-        ItemStack info = inv.getItem(49);
-        int pageNumber = info.getItemMeta().getCustomModelData();
-        ServerUtils.verbose("Updating Page: %s".formatted(pageNumber));
-
-        inv.getItem(49).getItemMeta().setCustomModelData(pageNumber);
-        info.getItemMeta().lore().set(3, Component.text(g.color("&7Page &9%s&7/&b%s".formatted(pageNumber,getMaxPages()))));
 
         setupPage(inv,pageNumber);
     }
 
-    private static void handleDefine(Inventory inv) {
-        setupPage(inv,1);
+    public void decrementPage(Inventory inv) {
+        ItemStack info = inv.getItem(49);
+        ItemMeta meta = info.getItemMeta();
+        int pageNumber = meta.getCustomModelData() - 1;
+        ServerUtils.verbose("Decrementing to Page: %s".formatted(pageNumber));
+
+        setupPage(inv,pageNumber);
     }
 
-    private static void setupPage(Inventory inv, int pageNumber) {
-        int pageSize = 46;
-        int startIndex = (pageNumber - 1) * pageSize;
-        int endIndex = Math.min(startIndex + pageSize, UltraDupe.dupeBanStorage.bannedMaterials.size());
+    private void setupPage(Inventory inv, int pageNumber) {
+        int maxPages = getMaxPages();
+        if (pageNumber < 1) pageNumber = 1;
+        if (pageNumber > maxPages) pageNumber = maxPages;
+        inv.clear();
+        int[] indecies = getListRange(pageNumber);
 
         int pointer = 0;
 
-        for (int i = startIndex; i < endIndex; i++) {
+        for (int i = indecies[0]; i < indecies[1]; i++) {
             Material bannedMaterial = UltraDupe.dupeBanStorage.bannedMaterials.get(i);
             inv.setItem(pointer, ItemBuilder.create()
                     .material(bannedMaterial)
                     .lore("")
-                    .lore(Global.instance.color("&7(Light click to remove)"))
+                    .lore(Global.instance.color("&7(Left click to remove)"))
                     .build());
             pointer++;
         }
@@ -159,19 +155,40 @@ public class DupeBanGUI extends CustomGui implements Global {
             inv.setItem(i,GuiItems.BLANK);
         }
 
-        ItemStack info = GuiItems.INFO_ICON;
-        info.getItemMeta().lore().set(3, Component.text(g.color("&7Page &9%s&7/&b%s".formatted(pageNumber,getMaxPages()))));
-        info.getItemMeta().setCustomModelData(pageNumber);
+        ItemStack info = ItemBuilder.create()
+                .material(Material.NAME_TAG)
+                .name(g.color("&b&lInfo"))
+                .lore(g.color("&3➥ &7(Drag-n-drop) &fAdds the item"))
+                .lore(g.color("&3➥ &7(Left-Click) &fRemoves the item"))
+                .lore(g.color(""))
+                .lore(g.color("&7Page &2%s&7/&a%s".formatted(pageNumber,maxPages)))
+                .customModelData(pageNumber)
+                .build();
 
         inv.setItem(45,GuiItems.BACK_ARROW);
         inv.setItem(49,info);
         inv.setItem(53,GuiItems.NEXT_ARROW);
     }
 
-    private static int getMaxPages() {
-        int pageSize = 46;
+    private int getMaxPages() {
         int totalMaterials = UltraDupe.dupeBanStorage.bannedMaterials.size();
-        return (int) Math.ceil((double) totalMaterials / pageSize);
+        int maxPages = (int) Math.ceil((double) totalMaterials / 45);
+        ServerUtils.verbose("Calculated max pages: %s".formatted(maxPages));
+        return maxPages;
+    }
+
+    private int[] getListRange(int page) {
+        int total = UltraDupe.dupeBanStorage.bannedMaterials.size();
+        int totalPages = (int) Math.ceil((double) total / 45);
+
+        page = Math.min(page,totalPages);
+        page = Math.max(page,1);
+
+        int start = (page - 1) * 45;
+        int end = Math.min(start + 45, total);
+        ServerUtils.verbose("List has %s items. A total of %s pages. The page %s was requested. It starts at %s and ends at %s.".formatted(total,totalPages,page,start,end));
+
+        return new int[]{start,end};
     }
 
 

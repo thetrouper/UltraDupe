@@ -23,6 +23,8 @@ public class UltraDupeCommand implements CustomCommand {
 
     public static List<UUID> bypassingBans = new ArrayList<>();
 
+    private DupeBanGUI gui = new DupeBanGUI();
+
     @Override
     public void dispatchCommand(CommandSender sender, Args args) {
         Player p = (Player) sender;
@@ -30,7 +32,7 @@ public class UltraDupeCommand implements CustomCommand {
         switch (args.get(0).toString()) {
             case "gui" -> {
                 DupeBanGUI.isInGUI.add(p.getUniqueId());
-                p.openInventory(DupeBanGUI.home.getInventory());
+                p.openInventory(gui.home.getInventory());
             }
             case "dupebans" -> {
                 switch (args.get(1).toString()) {
@@ -152,10 +154,9 @@ private void handleItemEdit(Player p, Args args) {
     }
 
     private static void populateBannedMaterials() {
-        int numberOfMaterials = 100;
-
-        for (int i = 0; i < numberOfMaterials; i++) {
+        for (int i = 0; i < 100; i++) {
             Material randomMaterial = getRandomMaterial();
+            if (!randomMaterial.isItem() || randomMaterial.isAir()) continue;
             UltraDupe.dupeBanStorage.bannedMaterials.add(randomMaterial);
         }
     }
